@@ -1,0 +1,196 @@
+from modulos.alunofundamental import Alunofund
+from modulos.alunomedio import Alunomed
+from modulos.alunopre import Alunopre
+from modulos.bibliotecario import Bibliotecario
+from modulos.livros import Livro
+from modulos.alunodao import AlunoDAO
+from modulos.livrosdao import LivroDAO
+
+aluno_dao: AlunoDAO = AlunoDAO("banco.db")
+livro_dao: LivroDAO = LivroDAO("banco.db")
+
+b1 = Bibliotecario('bibliotecario', '123')
+
+
+op = 99999
+while op != 0:
+    print('--------------BIBLIOTECA IFPB--------------')
+    print('1-cadastro do aluno')
+    print('2- login')
+    print('0- sair')
+
+    op = int(input('digite a opção desejada: '))
+
+    if op == 1:
+        nome = input('digite seu nome: ')
+        while aluno_dao.verificar_nome_existente(nome):
+            nome = input("nome existente. digite novamente um novo login: ")
+
+        login = input('digite seu login: ')
+        while aluno_dao.verificar_login_existente(login):
+            login = input('login existente. digite um novo login: ')
+
+        cpf = input('digite seu cpf: ')
+        while aluno_dao.verificar_cpf_existente(cpf):
+            cpf = input('cpf com dono. digite novamente')
+
+        matricula = input('digite sua matricula: ')
+        while aluno_dao.verificar_matricula_existente(matricula):
+            matricula = input('matricula com dono. digite novamente')
+
+        senha = input('digite uma senha: ')
+        confirma_senha = input('confirme sua senha: ')
+
+        while len(cpf) != 11:
+            print('cpf deve conter 11 digitos')
+            cpf = input('digite seu cpf: ')
+
+        while len(matricula) != 12:
+            print('a matricula deve conter 12 digitos')
+            matricula = input('digite sua matricula novamente: ')
+
+        if senha == confirma_senha:
+
+            nivel = input('digite seu nivel de escolaridade: ')
+            if nivel == 'ensino medio':
+                novo_aluno = Alunomed(login, senha, nome, cpf, matricula, nivel)
+                aluno_dao.inserir(novo_aluno)
+
+            elif nivel == 'ensino fundamental':
+                novo_aluno = Alunofund(login, senha, nome, cpf, matricula, nivel)
+                aluno_dao.inserir(novo_aluno)
+
+            elif nivel == 'pre':
+                novo_aluno = Alunopre(login, senha, nome, cpf, matricula, nivel)
+                print(novo_aluno)
+                aluno_dao.inserir(novo_aluno)
+
+            else:
+                print('nível inválido. Digite: ensino medio, ensino fundamental ou pre.')
+
+            print('usuario cadastrado com sucesso')
+        else:
+            print('')
+            print('usuario ou senha não iguais. Tente cadrastrar novamente')
+
+    elif op == 2:
+
+        login = input('Digite seu login: ')
+        senha = input('Digite sua senha: ')
+        aluno_logado = None
+        bibliotecario_logado = False
+
+        if login == 'bibliotecario' and senha == '123':
+            bibliotecario_logado = True
+        else:
+            aluno = aluno_dao.buscar_por_login_senha(login, senha)
+            if aluno:
+                aluno_logado = aluno
+                print("login feito com sucesso")
+            else:
+                print("login errado")
+
+        if aluno_logado:
+            op1 = 9999
+            print('login feito com sucesso')
+            while op1 != 0:
+                print('\n\n---------RESERVA DE LIVROS------------')
+                print('1-classificação de livro')
+                print('2-listar livros')
+                print('3-reservar livro')
+                print('4-trocar senha')
+                print('0- sair\n\n')
+
+                op1 = int(input('digite a opção desejada: '))
+
+                if op1 == 1:
+                    aluno_logado.escolher_livro(aluno_logado.nivel)
+
+                elif op1 == 2:
+                    lista_livros = livro_dao.listar()
+                    if len(lista_livros) == 0:
+                        print('Nenhum livro disponível.')
+                    else:
+                        lista_livros = livro_dao.listar()
+                        for livro in lista_livros:
+                            print(livro.id,
+                                  livro.nome_livro,
+                                  livro.autor,
+                                  livro.quantidade,
+                                  "disponíveis")
+
+                elif op1 == 3:
+                    nome_livro = input('qual livro voce deseja reservar: ')
+                    livro = livro_dao.buscar_por_nome(nome_livro)
+
+                    if not livro:
+                        print("livro não encontrado.")
+                    elif livro.quantidade <= 0:
+                        print("não há exemplares disponíveis.")
+                    else:
+                        livro_dao.atualizar_quantidade(livro.id, livro.quantidade - 1)
+                        print("reservado com sucesso!")
+
+                elif op1 == 4:
+                    senha_atual = input('digite sua senha atual: ')
+                    if senha_atual != aluno_logado.senha:
+                        print('senha atual incorreta.')
+                    else:
+                        nova_senha: str = input('digite a nova senha: ')
+                        confirmar = input('confirme a nova senha: ')
+
+                        if nova_senha == confirmar and len(nova_senha) >= 8:
+                            aluno_dao.atualizar_senha(aluno_logado.login, nova_senha)
+                            aluno_logado.senha = nova_senha
+                            print('senha alterada com sucesso')
+                        else:
+                            print('erro ao atualizar a senha')
+
+        elif bibliotecario_logado:
+            print('voce é um bibliotecario')
+
+            op2 = 99
+            while op2 != 0:
+                print('\nADICIONAR LIVROS AO SISTEMA')
+                print('1-inserir livro')
+                print('2-listar livros')
+                print('3-remover livro')
+                print('0-sair\n')
+
+                op2 = int(input('digite a opção desejada: '))
+
+                if op2 == 1:
+                    nome = input('digite o nome do livro: ')
+                    autor = input('digite o nome do autor do livro: ')
+                    qntd = int(input('quantos livros tem disponíveis: '))
+                    prazo = int(input('digite o prazo de entrega: '))
+                    id = input('digite o id do livro:')
+                    novo_livro = Livro(nome, autor, qntd, prazo, id)
+                    livro_dao.inserir(novo_livro)
+                    print("Livro", nome, "adicionado")
+
+                elif op2 == 2:
+                    lista_livros = livro_dao.listar()
+                    for livro in lista_livros:
+                        print('')
+                        print("Nome do livro:", livro.nome_livro)
+                        print("Autor do livro:", livro.autor)
+                        print("Quantidade de livros:", livro.quantidade)
+                        print("Prazo de entrega:", livro.prazo)
+                        print("id do livro", livro.id)
+                        print('')
+
+                elif op2 == 3:
+                    id_remover = input('Digite o id do livro que deseja remover: ')
+                    achei = False
+                    removido = livro_dao.deletar(id_remover)
+                    print("Livro removido.")
+                    if not achei:
+                        print('Livro não encontrado.')
+
+                else:
+                    print('')
+                    print('voltando para menu principal')
+
+        else:
+            print('senha ou login incorretos')
