@@ -1,0 +1,6 @@
+from modulos.pessoa import Pessoa
+
+
+class Bibliotecario(Pessoa):
+    def __init__(self, login, senha):
+        super().__init__(login, senha)
