@@ -1,0 +1,107 @@
+import sqlite3
+from modulos.alunofundamental import Alunofund
+from modulos.alunomedio import Alunomed
+from modulos.alunopre import Alunopre
+
+
+class AlunoDAO:
+    def __init__(self, banco):
+        self.conn = sqlite3.connect(banco)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS alunos (login TEXT PRIMARY KEY, nome TEXT, matricula TEXT UNIQUE, nivel TEXT, cpf TEXT UNIQUE, senha TEXT)"
+        )
+        self.conn.commit()
+
+    def inserir(self, aluno):
+
+        self.cursor.execute(
+            "INSERT INTO alunos (login, nome, matricula, nivel, cpf, senha) VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                aluno.login,
+                aluno.nome,
+                aluno.matricula,
+                aluno.nivel,
+                aluno.cpf,
+                aluno.senha
+            )
+        )
+        self.conn.commit()
+
+    def listar(self):
+        self.cursor.execute("SELECT login, nome, matricula, nivel, cpf, senha FROM alunos")
+        dados = self.cursor.fetchall()
+        lista = []
+        for login, nome, matricula, nivel, cpf, senha in dados:
+            if nivel == 'ensino medio':
+                aluno = Alunomed(login, senha, nome, cpf, matricula, nivel)
+            elif nivel == 'ensino fundamental':
+                aluno = Alunofund(login, senha, nome, cpf, matricula, nivel)
+            else:
+                aluno = Alunopre(login, senha, nome, cpf, matricula, nivel)
+
+            lista.append(aluno)
+
+        return lista
+
+    def buscar_por_login_senha(self, login, senha):
+        self.cursor.execute("SELECT login, nome, matricula, nivel, cpf, senha FROM alunos WHERE login=? AND senha=?", (login, senha))
+        dados = self.cursor.fetchone()
+        if not dados:
+            return None
+
+        login, nome, matricula, nivel, cpf, senha = dados
+
+        if nivel == 'ensino medio':
+            return Alunomed(login, senha, nome, cpf, matricula, nivel)
+        elif nivel == 'ensino fundamental':
+            return Alunofund(login, senha, nome, cpf, matricula, nivel)
+        else:
+            return Alunopre(login, senha, nome, cpf, matricula, nivel)
+
+    def verificar_login_existente(self, login):
+        self.cursor.execute(f"SELECT nome FROM alunos WHERE login='{login}'")
+        dados = self.cursor.fetchall()
+        if len(dados) > 0:
+            return True
+        else:
+            return False
+
+    def verificar_cpf_existente(self, cpf):
+        self.cursor.execute(f"SELECT nome FROM alunos WHERE cpf='{cpf}'")
+        dados = self.cursor.fetchall()
+        if len(dados) > 0:
+            return True
+        else:
+            return False
+
+    def verificar_matricula_existente(self, matricula):
+        self.cursor.execute(f"SELECT nome FROM alunos WHERE matricula='{matricula}'")
+        dados = self.cursor.fetchall()
+        if len(dados) > 0:
+            return True
+        else:
+            return False
+
+    def verificar_nome_existente(self, nome):
+        self.cursor.execute(f"SELECT nome FROM alunos WHERE nome='{nome}'")
+        dados = self.cursor.fetchall()
+        if len(dados) > 0:
+            return True
+        else:
+            return False
+
+    def atualizar_senha(self, login, nova_senha):
+        self.cursor.execute(
+            "UPDATE alunos SET senha=? WHERE login=?",
+            (nova_senha, login)
+        )
+        self.conn.commit()
+
+    def deletar(self, login):
+        self.cursor.execute("DELETE FROM alunos WHERE login=?", (login,))
+        self.conn.commit()
+
+aluno_dao = AlunoDAO('banco.db')
+
+print(aluno_dao.listar())
