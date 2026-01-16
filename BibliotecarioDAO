@@ -1,0 +1,36 @@
+import sqlite3
+from modulos.bibliotecario import Bibliotecario
+
+
+class BibliotecarioDAO:
+    def __init__(self, banco):
+        self.conn = sqlite3.connect(banco)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS bibliotecarios (
+                login TEXT PRIMARY KEY,
+                senha TEXT
+            )
+        """)
+        self.conn.commit()
+
+    def inserir(self, bibliotecario):
+        self.cursor.execute("INSERT INTO bibliotecarios (login, senha) VALUES (?, ?)", (
+            bibliotecario.login,
+            bibliotecario.senha
+        ))
+        self.conn.commit()
+
+    def buscar_por_login_senha(self, login, senha):
+        self.cursor.execute("""
+               SELECT login, senha
+               FROM bibliotecarios
+               WHERE login = ? AND senha = ?
+           """, (login, senha))
+
+        dados = self.cursor.fetchone()
+        if not dados:
+            return None
+
+        login, senha = dados
+        return Bibliotecario(login, senha)
