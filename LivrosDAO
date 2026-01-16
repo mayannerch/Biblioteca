@@ -1,0 +1,47 @@
+import sqlite3
+from modulos.livros import Livro
+
+
+class LivroDAO:
+    def __init__(self, banco):
+        self.conn = sqlite3.connect(banco)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute(
+            "CREATE TABLE IF NOT EXISTS livros (id TEXT PRIMARY KEY, nome_livro TEXT, autor TEXT, quantidade INTEGER, prazo INTEGER)"
+        )
+        self.conn.commit()
+
+    def inserir(self, livro):
+        self.cursor.execute(
+            "INSERT INTO livros (nome_livro, autor, quantidade, prazo, id) VALUES (?, ?, ?, ?, ?)",
+            (livro.nome_livro, livro.autor, livro.quantidade, livro.prazo, livro.id)
+        )
+        self.conn.commit()
+
+    def listar(self):
+        self.cursor.execute("SELECT nome_livro, autor, quantidade, prazo, id FROM livros")
+        dados = self.cursor.fetchall()
+        lista = []
+        for nome_livro, autor, quantidade, prazo, id in dados:
+            novo_livro = Livro(nome_livro, autor, quantidade, prazo, id)
+            lista.append(novo_livro)
+
+        return lista
+
+    def deletar(self, id):
+        self.cursor.execute("DELETE FROM livros WHERE id=?", (id,))
+        self.conn.commit()
+        return None
+
+    def buscar_por_nome(self, nome):
+        self.cursor.execute("SELECT nome_livro, autor, quantidade, prazo, id FROM livros WHERE nome_livro=?", (nome,))
+        dados = self.cursor.fetchone()
+        if not dados:
+            return None
+
+        nome_livro, autor, quantidade, prazo, id = dados
+        return Livro(nome_livro, autor, quantidade, prazo, id)
+
+    def atualizar_quantidade(self, id, nova_qtd):
+        self.cursor.execute("UPDATE livros SET quantidade=? WHERE id=?", (nova_qtd, id))
+        self.conn.commit()
