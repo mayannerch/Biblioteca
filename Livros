@@ -1,0 +1,47 @@
+class Livro:
+    def __init__(self, nome_livro, autor, quantidade, prazo, id=None):
+        self.__id = id
+        self.__nome_livro = nome_livro
+        self.__autor_livro = autor
+        self.__quantidade = quantidade
+        self.__prazo_livro = prazo
+
+    @property
+    def id(self):
+        return self.__id
+
+    @id.setter
+    def id(self, novo_id):
+        self.__id = novo_id
+
+    @property
+    def nome_livro(self):
+        return self.__nome_livro
+
+    @nome_livro.setter
+    def nome_livro(self, novo_nome):
+        self.__nome_livro = novo_nome.lower()
+
+    @property
+    def autor(self):
+        return self.__autor_livro
+
+    @autor.setter
+    def autor(self, novo_autor):
+        self.__autor_livro = novo_autor
+
+    @property
+    def quantidade(self):
+        return self.__quantidade
+
+    @quantidade.setter
+    def quantidade(self, novo_quantidade):
+        self.__quantidade = novo_quantidade
+
+    @property
+    def prazo(self):
+        return self.__prazo_livro
+
+    @prazo.setter
+    def prazo(self, novo_prazo):
+        self.__prazo_livro = novo_prazo
