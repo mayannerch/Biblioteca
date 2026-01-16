@@ -1,0 +1,27 @@
+class Pessoa:
+
+    def __init__(self, login, senha):
+        self.__senha = senha
+        self.__login = login
+
+    @property
+    def login(self):
+        return self.__login
+
+    @login.setter
+    def login(self, novo_login):
+        self.__login = novo_login.lower()
+
+    @property
+    def senha(self):
+        return self.__senha
+
+    @senha.setter
+    def senha(self, nova_senha):
+        if len(nova_senha) >= 8:
+            self.__senha = nova_senha
+        else:
+            print('senha muito pequena. precisa ter 8 caracteres')
+
+    def escolher_livro(self, nivel):
+        print('preciso escolher um livro.')
