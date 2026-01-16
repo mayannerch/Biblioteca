@@ -1,0 +1,16 @@
+from modulos.pessoa import Pessoa
+
+
+class Alunopre(Pessoa):
+    def __init__(self, login, senha, nome, cpf, matricula, nivel):
+        super().__init__(login, senha)
+        self.nome = nome
+        self.cpf = cpf
+        self.matricula = matricula
+        self.nivel = nivel
+
+    def escolher_livro(self, nivel):
+        print('Desejo livros de pintura.')
+
+    def __repr__(self):
+        return f"Aluno(Nome: {self.nome}, Login: {self.login})"
